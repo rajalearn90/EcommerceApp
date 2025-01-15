@@ -21,8 +21,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Expose port for the Web API traffic
-ENV ASPNETCORE_URLS http://+:5000
 EXPOSE 5000
+EXPOSE 5001
 
 ENTRYPOINT ["dotnet", "EcommerceApp.dll"]
