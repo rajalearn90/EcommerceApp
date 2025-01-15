@@ -523,11 +523,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Repo_Ecommerce\\EcommerceApplication\\EcommerceApp\\EcommerceApp.csproj",
+      "projectUniqueName": "C:\\GitRepo\\EcommerceApp\\EcommerceApplication\\EcommerceApp.csproj",
       "projectName": "EcommerceApp",
-      "projectPath": "C:\\Repo_Ecommerce\\EcommerceApplication\\EcommerceApp\\EcommerceApp.csproj",
+      "projectPath": "C:\\GitRepo\\EcommerceApp\\EcommerceApplication\\EcommerceApp.csproj",
       "packagesPath": "C:\\Users\\rajaa\\.nuget\\packages\\",
-      "outputPath": "C:\\Repo_Ecommerce\\EcommerceApplication\\EcommerceApp\\obj\\",
+      "outputPath": "C:\\GitRepo\\EcommerceApp\\EcommerceApplication\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
