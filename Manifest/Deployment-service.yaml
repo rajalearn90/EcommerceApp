@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment # Kubernetes resource kind we are creating
 metadata:
-  name: web-api-deployment
+  name: webapi-deployment
   namespace: webapps
 spec:
   selector:
     matchLabels:
-      app: web-api
+      app: webapi
   replicas: 2 # Number of replicas that will be created for this deployment
   template:
     metadata:
       labels:
-        app: web-api
+        app: webapi
     spec:
       containers:
-        - name: web-api
+        - name: webapi
           image: us-central1-docker.pkg.dev/project1-444610/jenkins-project/pn1-dotnet-api:3 # Image that will be used to containers in the cluster
           imagePullPolicy: Always
           ports:
@@ -26,11 +26,11 @@ spec:
 apiVersion: v1 # Kubernetes API version
 kind: Service # Kubernetes resource kind we are creating
 metadata: # Metadata of the resource kind we are creating
-  name: web-api-ssvc
+  name: webapi-ssvc
   namespace: webapps
 spec:
   selector:
-    app: web-api
+    app: webapi
   ports:
     - protocol: "TCP"
       port: 80
