@@ -21,7 +21,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-EXPOSE 5555
-EXPOSE 5556
+EXPOSE 5000
 
 ENTRYPOINT ["dotnet", "EcommerceApp.dll"]
