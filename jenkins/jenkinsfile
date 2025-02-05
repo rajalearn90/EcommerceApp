@@ -1,0 +1,131 @@
+pipeline {
+    agent any
+
+environment{
+    SCANNER_HOME= tool 'tool-sonar'
+    GOOGLE_APPLICATION_CREDENTIALS="/etc/gcloud/p1_credential.json"
+    GCP_PROJECT = 'project1-444610'
+    DOTNET_VERSION = '8.0'  // Specify the .NET SDK version
+    }
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/rajalearn90/ProjectN1-DotNetWebAPI.git'
+            }
+        }
+        stage('version check') {
+            steps {
+                sh 'dotnet --version'
+            }
+        }
+        
+        stage('restore') {
+            steps {
+                sh 'dotnet restore ProjectN1_WebAPI.csproj'
+            }
+        }
+        
+        stage('Compile'){
+            steps{
+                sh 'dotnet build ProjectN1_WebAPI.csproj --configuration Release'
+            }
+        }
+        
+        stage('Build'){
+            steps{
+                sh 'dotnet build ProjectN1_WebAPI.csproj --configuration Release'
+            }
+        }
+        
+        stage('Trivy Dependency Scan') {
+            steps {
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        
+        stage('SonarQube Analsyis') {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=ProjectN1-WebAPI -Dsonar.projectKey=ProjectN1-WebAPI \
+                            -Dsonar.cs.dotnet.binaries=. '''
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                script {
+                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                }
+            }
+        }
+        
+       stage('Build & tag Docker Image'){
+            steps {
+                    script {
+                    // This step should not normally be used in your script. Consult the inline help for details.
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker build -t reachmeraja18/dotnetweb-api-project1:${BUILD_NUMBER} . "
+                    }
+                }
+            }
+        }
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image --format table -o trivy-image-report.html reachmeraja18/dotnetweb-api-project1:${BUILD_NUMBER} "
+            }
+        }
+        
+        stage('Push to Docker hub'){
+            steps {
+                    script {
+                    // This step should not normally be used in your script. Consult the inline help for details.
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh 'docker push reachmeraja18/dotnetweb-api-project1:${BUILD_NUMBER} '
+                    }
+                }
+            }
+        }
+        
+        stage('GCP Authentication'){
+            steps{
+                script{
+                    // Authenticate with Google Cloud
+                    sh 'gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS'
+                    sh 'gcloud auth configure-docker us-central1-docker.pkg.dev'
+                    sh 'gcloud config set project $GCP_PROJECT'
+                }
+            }
+        }
+        
+        stage('Build & Tag Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t us-central1-docker.pkg.dev/project1-444610/jenkins-project/pn1-dotnet-api:${BUILD_NUMBER} . '
+                }
+            }
+        }
+        
+        stage('Push to GCR') {
+            steps {
+                script {
+                    // Tag and push the Docker image to GCR
+                    //sh 'docker tag gcr.io/us-central1-docker.pkg.dev/project1-444610/jenkins-project/boardgame:${BUILD_NUMBER} . '
+                    sh 'docker push us-central1-docker.pkg.dev/project1-444610/jenkins-project/pn1-dotnet-api:${BUILD_NUMBER}'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'All tests passed!'
+        }
+        failure {
+            echo 'Some tests failed. Check the logs and test reports.'
+        }
+    }
+    
+}
